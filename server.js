@@ -6,7 +6,13 @@ const mongoose = require('mongoose');
 require('dotenv').config();
 
 const app = express();
-app.use(cors());
+
+// Configure CORS to allow all origins and headers
+app.use(cors({
+  origin: '*',
+  allowedHeaders: '*'
+}));
+
 app.use(express.json());
 
 // Connect to MongoDB
