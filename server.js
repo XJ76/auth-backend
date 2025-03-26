@@ -7,9 +7,9 @@ require('dotenv').config();
 
 const app = express();
 
-// Configure CORS to allow all origins and headers
+// Configure CORS to allow specific origin
 app.use(cors({
-  origin: '*',
+  origin: ['https://breastcancer-frontend.vercel.app', 'https://auth-backend-qyna.onrender.com'],
   allowedHeaders: '*'
 }));
 
