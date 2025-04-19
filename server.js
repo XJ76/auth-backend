@@ -27,16 +27,7 @@ mongoose.connect(process.env.MONGODB_URI, {
 // User schema and model
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true },
-  role: { 
-    type: String, 
-    required: true, 
-    enum: ['patient', 'doctor', 'admin'],
-    default: 'patient'
-  },
-  name: { type: String, required: true },
-  phone: { type: String },
-  address: { type: String }
+  password: { type: String, required: true }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -44,7 +35,7 @@ const User = mongoose.model('User', userSchema);
 // Register endpoint
 app.post('/api/register', async (req, res) => {
   try {
-    const { email, password, role, name, phone, address } = req.body;
+    const { email, password } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -59,23 +50,19 @@ app.post('/api/register', async (req, res) => {
     // Create user
     const user = new User({
       email,
-      password: hashedPassword,
-      role,
-      name,
-      phone,
-      address
+      password: hashedPassword
     });
 
     await user.save();
 
     // Create token
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '1h' }
     );
 
-    res.status(201).json({ token, user: { email: user.email, role: user.role, name: user.name } });
+    res.status(201).json({ token });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -100,19 +87,12 @@ app.post('/api/login', async (req, res) => {
 
     // Create token
     const token = jwt.sign(
-      { userId: user._id, role: user.role },
+      { userId: user._id },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '1h' }
     );
 
-    res.json({ 
-      token, 
-      user: { 
-        email: user.email, 
-        role: user.role, 
-        name: user.name 
-      } 
-    });
+    res.json({ token });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
