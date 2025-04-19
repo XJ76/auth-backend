@@ -9,7 +9,7 @@ const app = express();
 
 // Configure CORS to allow specific origin and include necessary headers
 app.use(cors({
-  origin: ['https://breastcancer-frontend.vercel.app', 'https://auth-backend-qyna.onrender.com', 'http://localhost:5173', 'http://localhost:5175'],
+  origin: ['https://breastcancer-frontend.vercel.app', 'https://auth-backend-qyna.onrender.com', 'http://localhost:5173', "https://v0-breast-cancer-detection.vercel.app",'http://localhost:5175'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
@@ -27,7 +27,16 @@ mongoose.connect(process.env.MONGODB_URI, {
 // User schema and model
 const userSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
-  password: { type: String, required: true }
+  password: { type: String, required: true },
+  role: { 
+    type: String, 
+    required: true, 
+    enum: ['patient', 'doctor', 'admin'],
+    default: 'patient'
+  },
+  name: { type: String, required: true },
+  phone: { type: String },
+  address: { type: String }
 });
 
 const User = mongoose.model('User', userSchema);
@@ -35,7 +44,7 @@ const User = mongoose.model('User', userSchema);
 // Register endpoint
 app.post('/api/register', async (req, res) => {
   try {
-    const { email, password } = req.body;
+    const { email, password, role, name, phone, address } = req.body;
 
     // Check if user already exists
     const existingUser = await User.findOne({ email });
@@ -50,19 +59,23 @@ app.post('/api/register', async (req, res) => {
     // Create user
     const user = new User({
       email,
-      password: hashedPassword
+      password: hashedPassword,
+      role,
+      name,
+      phone,
+      address
     });
 
     await user.save();
 
     // Create token
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '1h' }
     );
 
-    res.status(201).json({ token });
+    res.status(201).json({ token, user: { email: user.email, role: user.role, name: user.name } });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
@@ -87,12 +100,19 @@ app.post('/api/login', async (req, res) => {
 
     // Create token
     const token = jwt.sign(
-      { userId: user._id },
+      { userId: user._id, role: user.role },
       process.env.JWT_SECRET || 'your-secret-key',
       { expiresIn: '1h' }
     );
 
-    res.json({ token });
+    res.json({ 
+      token, 
+      user: { 
+        email: user.email, 
+        role: user.role, 
+        name: user.name 
+      } 
+    });
   } catch (error) {
     res.status(500).json({ message: 'Server error' });
   }
