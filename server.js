@@ -9,7 +9,7 @@ const app = express();
 
 // Configure CORS to allow specific origin and include necessary headers
 app.use(cors({
-  origin: ['https://breastcancer-frontend.vercel.app', 'https://auth-backend-qyna.onrender.com', 'http://localhost:5173', "https://v0-breast-cancer-detection.vercel.app",'http://localhost:5175'],
+  origin: ['https://breastcancer-frontend.vercel.app', 'https://auth-backend-qyna.onrender.com', 'http://localhost:5173', "https://v0-breast-cancer-detection.vercel.app",'http://localhost:3000'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
   allowedHeaders: ['Content-Type', 'Authorization'],
   credentials: true
